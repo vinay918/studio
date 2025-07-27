@@ -1,7 +1,7 @@
 'use server';
 
 import {generateVideoSummary} from '@/ai/flows/generate-video-summary';
-import {summarizeYoutubeResults} from '@/ai/flows/summarize-youtube-results';
+import {summarizeYoutubeVideo} from '@/ai/flows/summarize-youtube-results';
 import type {Video} from '@/lib/types';
 import {z} from 'zod';
 import yts from 'yt-search';
@@ -44,7 +44,15 @@ export async function getSummary(
 ): Promise<{summary: string} | {error: string}> {
   try {
     const validatedVideos = summaryInputSchema.parse(videos);
-    const result = await summarizeYoutubeResults({videoInfo: validatedVideos});
+    if (validatedVideos.length === 0) {
+      return {error: 'No videos to summarize.'};
+    }
+    const firstVideo = validatedVideos[0];
+    const result = await summarizeYoutubeVideo({
+      title: firstVideo.title,
+      description: firstVideo.description,
+      videoUrl: firstVideo.videoUrl,
+    });
     return {summary: result.summary};
   } catch (e) {
     console.error(e);

@@ -1,64 +1,63 @@
 'use server';
 
 /**
- * @fileOverview Summarizes a list of YouTube video titles and descriptions into a concise summary.
+ * @fileOverview Summarizes a YouTube video's title and description into a concise summary.
  *
- * - summarizeYoutubeResults - A function that takes a list of video titles and descriptions and returns a summary.
- * - SummarizeYoutubeResultsInput - The input type for the summarizeYoutubeResults function.
- * - SummarizeYoutubeResultsOutput - The return type for the summarizeYoutubeResults function.
+ * - summarizeYoutubeResults - A function that takes a video's title and description and returns a summary.
+ * - SummarizeYoutubeVideoInput - The input type for the summarizeYoutubeVideo function.
+ * - SummarizeYoutubeVideoOutput - The return type for the summarizeYoutubeVideo function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const SummarizeYoutubeResultsInputSchema = z.object({
-  videoInfo: z.array(
-    z.object({
-      title: z.string().describe('The title of the video.'),
-      description: z.string().describe('The description of the video.'),
-      videoUrl: z.string().url().describe('The URL of the YouTube video.'),
-    })
-  ).describe('An array of video titles, descriptions, and URLs to summarize.'),
+const SummarizeYoutubeVideoInputSchema = z.object({
+  title: z.string().describe('The title of the video.'),
+  description: z.string().describe('The description of the video.'),
+  videoUrl: z.string().url().describe('The URL of the YouTube video.'),
 });
-export type SummarizeYoutubeResultsInput = z.infer<typeof SummarizeYoutubeResultsInputSchema>;
+export type SummarizeYoutubeVideoInput = z.infer<
+  typeof SummarizeYoutubeVideoInputSchema
+>;
 
-const SummarizeYoutubeResultsOutputSchema = z.object({
-  summary: z.string().describe('A concise summary of the videos.'),
+const SummarizeYoutubeVideoOutputSchema = z.object({
+  summary: z.string().describe('A concise summary of the video.'),
 });
-export type SummarizeYoutubeResultsOutput = z.infer<typeof SummarizeYoutubeResultsOutputSchema>;
+export type SummarizeYoutubeVideoOutput = z.infer<
+  typeof SummarizeYoutubeVideoOutputSchema
+>;
 
-export async function summarizeYoutubeResults(input: SummarizeYoutubeResultsInput): Promise<SummarizeYoutubeResultsOutput> {
-  return summarizeYoutubeResultsFlow(input);
+export async function summarizeYoutubeVideo(
+  input: SummarizeYoutubeVideoInput
+): Promise<SummarizeYoutubeVideoOutput> {
+  return summarizeYoutubeVideoFlow(input);
 }
 
-const summarizeYoutubeResultsFlow = ai.defineFlow(
+const summarizeYoutubeVideoFlow = ai.defineFlow(
   {
-    name: 'summarizeYoutubeResultsFlow',
-    inputSchema: SummarizeYoutubeResultsInputSchema,
-    outputSchema: SummarizeYoutubeResultsOutputSchema,
+    name: 'summarizeYoutubeVideoFlow',
+    inputSchema: SummarizeYoutubeVideoInputSchema,
+    outputSchema: SummarizeYoutubeVideoOutputSchema,
   },
   async input => {
-    // Dynamically build the prompt parts for each video
-    const promptParts = input.videoInfo.flatMap(video => [
-      { text: `Title: ${video.title}` },
-      { text: `Description: ${video.description}` },
-      { media: { url: video.videoUrl, contentType: 'video/mp4' } }
-    ]);
-
     const {output} = await ai.generate({
       prompt: [
-        { text: `You are an expert summarizer of YouTube videos.
+        {
+          text: `You are an expert summarizer of YouTube videos.
 
-You will be provided a list of videos, including their title, description, and the video content itself. Your job is to summarize the content of these videos into a single, concise summary.
+You will be provided a video, including its title, description, and the video content itself. Your job is to summarize the content of this video into a single, concise summary.
 
-Here are the videos:` },
-        ...promptParts
+Here is the video:`,
+        },
+        {text: `Title: ${input.title}`},
+        {text: `Description: ${input.description}`},
+        {media: {url: input.videoUrl, contentType: 'video/mp4'}},
       ],
       output: {
-        schema: SummarizeYoutubeResultsOutputSchema,
-      }
+        schema: SummarizeYoutubeVideoOutputSchema,
+      },
     });
-    
+
     return output!;
   }
 );
