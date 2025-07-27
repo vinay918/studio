@@ -26,12 +26,8 @@ export default function ResultsPage({ videos }: { videos: Video[] }) {
     setIsSummaryLoading(true);
     setSummary('');
 
-    const videoInfo = videos.map(({ title, description }) => ({
-      title,
-      description,
-    }));
-
-    const result = await getSummary(videoInfo);
+    // Pass the full video objects to the summary function
+    const result = await getSummary(videos);
 
     if (result.error) {
       toast({
@@ -120,7 +116,7 @@ export default function ResultsPage({ videos }: { videos: Video[] }) {
               </AccordionTrigger>
               <AccordionContent className="pt-2 text-base leading-relaxed">
                 {isSummaryLoading && !summary && (
-                  <p>Generating your summary, please wait...</p>
+                  <p>Generating your summary, please wait... This may take a few moments as we analyze the videos.</p>
                 )}
                 {summary}
               </AccordionContent>

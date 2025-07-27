@@ -30,13 +30,17 @@ export async function searchYoutube(query: string): Promise<Video[]> {
 
 const summaryInputSchema = z.array(
   z.object({
+    id: z.string(),
     title: z.string(),
     description: z.string(),
+    thumbnailUrl: z.string(),
+    channelName: z.string(),
+    videoUrl: z.string(),
   })
 );
 
 export async function getSummary(
-  videos: {title: string; description: string}[]
+  videos: Video[]
 ): Promise<{summary: string} | {error: string}> {
   try {
     const validatedVideos = summaryInputSchema.parse(videos);
