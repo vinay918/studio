@@ -33,7 +33,7 @@ export default function SearchResults({
       <main className="container mx-auto px-4 py-8">
         <p className="mb-2 text-sm text-muted-foreground">Showing results for:</p>
         <h1 className="font-headline mb-8 truncate text-3xl font-bold">
-          "{query}"
+          &quot;{query}&quot;
         </h1>
         <Suspense fallback={<ResultsSkeleton />}>
           <VideoResults query={query} />
