@@ -3,36 +3,18 @@
 import {summarizeYoutubeResults} from '@/ai/flows/summarize-youtube-results';
 import type {Video} from '@/lib/types';
 import {z} from 'zod';
+import yts from 'yt-search';
 
-// Function to fetch from YouTube API
 async function fetchYoutubeVideos(query: string): Promise<Video[]> {
-  const apiKey = process.env.YOUTUBE_API_KEY;
-  if (!apiKey) {
-    console.error('YouTube API key is not set.');
-    return [];
-  }
-
-  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(
-    query
-  )}&type=video&maxResults=10&key=${apiKey}`;
-
   try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      console.error('YouTube API request failed:', response.statusText);
-      const errorBody = await response.json();
-      console.error('Error details:', errorBody);
-      return [];
-    }
-    const data = await response.json();
-
-    return data.items.map((item: any) => ({
-      id: item.id.videoId,
-      title: item.snippet.title,
-      description: item.snippet.description,
-      thumbnailUrl: item.snippet.thumbnails.high.url,
-      channelName: item.snippet.channelTitle,
-      videoUrl: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+    const {videos} = await yts(query);
+    return videos.slice(0, 10).map(video => ({
+      id: video.videoId,
+      title: video.title,
+      description: video.description,
+      thumbnailUrl: video.thumbnail,
+      channelName: video.author.name,
+      videoUrl: video.url,
     }));
   } catch (error) {
     console.error('Error fetching from YouTube API:', error);
@@ -42,9 +24,6 @@ async function fetchYoutubeVideos(query: string): Promise<Video[]> {
 
 export async function searchYoutube(query: string): Promise<Video[]> {
   console.log(`Searching YouTube for: ${query}`);
-  // In a real application, you would use a scraping tool or YouTube's API here.
-  // For this demo, we'll return a hardcoded list of videos.
-  // await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
   return fetchYoutubeVideos(query);
 }
 
