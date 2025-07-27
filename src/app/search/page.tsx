@@ -10,9 +10,9 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 export default function SearchResults({
   searchParams,
 }: {
-  searchParams: { q?: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }) {
-  const query = searchParams.q || '';
+  const query = typeof searchParams?.q === 'string' ? searchParams.q : '';
 
   return (
     <div className="min-h-screen bg-background text-foreground">
