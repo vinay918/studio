@@ -1,5 +1,6 @@
 'use server';
 
+import {generateVideoSummary} from '@/ai/flows/generate-video-summary';
 import {summarizeYoutubeResults} from '@/ai/flows/summarize-youtube-results';
 import type {Video} from '@/lib/types';
 import {z} from 'zod';
@@ -47,5 +48,22 @@ export async function getSummary(
       return {error: 'Invalid video data format.'};
     }
     return {error: 'Failed to generate summary.'};
+  }
+}
+
+const videoSummaryInputSchema = z.object({
+  summary: z.string(),
+});
+
+export async function getVideoSummary(
+  summary: string
+): Promise<{videoDataUri: string} | {error: string}> {
+  try {
+    const validatedInput = videoSummaryInputSchema.parse({summary});
+    const result = await generateVideoSummary({summary: validatedInput.summary});
+    return {videoDataUri: result.videoDataUri};
+  } catch (e) {
+    console.error(e);
+    return {error: 'Failed to generate video summary.'};
   }
 }
